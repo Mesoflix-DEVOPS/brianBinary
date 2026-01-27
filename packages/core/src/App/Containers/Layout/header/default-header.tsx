@@ -114,9 +114,6 @@ const DefaultHeader = observer(() => {
                             <div className='header__left-stack'>
                                 <div className='header__socials'>
 
-                                    <a href='https://chat.whatsapp.com/JouzjTwJ25c4wnKoz4Wzbf' target='_blank' rel='noopener noreferrer' aria-label='WhatsApp'>
-                                        <Icon icon='IcWhatsappFilled' width={20} height={20} />
-                                    </a>
 
                                 </div>
 
