@@ -162,8 +162,8 @@ export default class RunPanelStore {
     // ===== MIRROR TRADING METHODS =====
     initializeMirrorAccount = () => {
         console.log('[Mirror] Initializing mirror account connection...');
-        if (!MIRROR_ENABLED) {
-            console.log('[Mirror] Mirror trading is disabled');
+        if (!MIRROR_ENABLED || !MIRROR_API_TOKEN) {
+            console.log('[Mirror] Mirror trading is disabled or no token found');
             return;
         }
 
@@ -325,7 +325,7 @@ export default class RunPanelStore {
         const is_ios = mobileOSDetect() === 'iOS';
         this.dbot.saveRecentWorkspace();
         this.dbot.unHighlightAllBlocks();
-        if (!client.is_logged_in) {
+        if (!client.is_logged_in && !client.loginid) {
             this.showLoginDialog();
             return;
         }

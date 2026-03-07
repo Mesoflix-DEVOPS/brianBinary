@@ -368,7 +368,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
                                             <a href='' target='_blank' rel='noopener noreferrer' aria-label='Telegram'>
                                                 <Icon icon='IcTelegram' width={22} height={22} />
                                             </a>
-                                            
+
                                         </div>
                                     </div>
                                 </MobileDrawer.SubHeader>
@@ -377,16 +377,7 @@ const ToggleMenuDrawer = observer(({ platform_config }) => {
                             <MobileDrawer.Body className={is_traders_hub_route || is_wallet_route ? 'no-padding' : ''}>
                                 <div className='header__menu-mobile-platform-switcher' id='mobile_platform_switcher' />
 
-                                <MobileDrawer.Item>
-                                    <a
-                                        href=''
-                                        className='dc-menu-link'
-                                        onClick={toggleDrawer}
-                                    >
-                                        <Icon icon={TradersHubIcon} className='dc-menu-link__icon' />
-                                        <span className='dc-menu-link__text'>{localize('DERIV START')}</span>
-                                    </a>
-                                </MobileDrawer.Item>
+
 
                                 {primary_routes_config.map((route_config, idx) =>
                                     getRoutesWithSubMenu(route_config, idx)

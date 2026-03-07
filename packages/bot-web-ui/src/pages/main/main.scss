@@ -1,6 +1,7 @@
 @import '../../styles/mixins.scss';
 
 .run-panel {
+
     // fix for the RTL issue on tab active line
     .dc-tabs__active-line {
         right: auto;
@@ -13,11 +14,12 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none; // Hide scrollbar for Firefox
+
         &::-webkit-scrollbar {
             display: none; // Hide scrollbar for Chrome/Safari
         }
     }
-    
+
     &__active-line {
         position: fixed !important; // Keep the line fixed during scroll
         transition: transform 0.3s ease-in-out; // Smooth transition for movement
@@ -30,11 +32,12 @@
     width: 100%;
     height: calc(100vh - 9rem);
     padding: 1.6rem;
+
     @include mobile-or-tablet-screen {
         height: calc(100vh - 6rem);
         padding: 0;
         -webkit-tap-highlight-color: transparent;
-        
+
         /* Improve touch feedback */
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -51,6 +54,7 @@
         width: 100%;
 
         &--active {
+
             //css for onboard tour overlay
             &:before {
                 content: '';
@@ -66,20 +70,30 @@
         }
 
         .dc-tabs {
-            
+
             &__active-line {
-                display: none; /* Hide the default active line */
+                display: none;
+                /* Hide the default active line */
             }
 
 
             &__active {
                 position: relative;
-                background: transparent;
-                color: #1E40AF !important; /* Blue-900 for active tab text */
+                background: rgba(255, 255, 255, 0.1) !important;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                color: var(--text-prominent) !important;
                 font-weight: 600;
-                transform: none;
-                box-shadow: none;
-                transition: all 0.2s ease;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-bottom: none;
+
+                @media (prefers-color-scheme: dark) {
+                    background: rgba(0, 0, 0, 0.2) !important;
+                    border-color: rgba(255, 255, 255, 0.1);
+                }
 
                 &::after {
                     content: '';
@@ -88,28 +102,32 @@
                     left: 0;
                     width: 100%;
                     height: 3px;
-                    background: #1E40AF; /* Blue-900 underline */
+                    background: var(--brand-secondary);
                     border-radius: 3px 3px 0 0;
                     transform: none;
                 }
 
                 svg {
-                    filter: brightness(0) invert(1);
+                    fill: currentColor;
                 }
             }
 
 
             &__list {
                 position: relative;
-                background: #FFFFFF; /* White background */
+                background: #FFFFFF;
+                /* White background */
                 justify-content: start;
                 justify-content: flex-start !important;
                 margin-left: 0;
-                padding: 4px 16px; /* Horizontal padding for tabs */
-                border-radius: 8px; /* Rounded corners */
+                padding: 4px 16px;
+                /* Horizontal padding for tabs */
+                border-radius: 8px;
+                /* Rounded corners */
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                gap: 8px; /* Space between tabs */
-                
+                gap: 8px;
+                /* Space between tabs */
+
                 &::after {
                     content: '';
                     position: absolute;
@@ -126,7 +144,7 @@
                     overflow-y: hidden;
                     -webkit-overflow-scrolling: touch;
                     scroll-behavior: smooth;
-                    
+
 
                     &::-webkit-scrollbar {
                         display: none;
@@ -196,9 +214,9 @@
             }
 
             &__item {
-                color: #1E40AF; /* Blue-900 for tab text */
+                color: var(--text-general);
                 font-weight: 500;
-                transition: all 0.2s ease;
+                transition: all 0.3s ease;
                 position: relative;
                 border-radius: 8px;
                 height: 4.8rem;
@@ -209,17 +227,28 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: linear-gradient(135deg, #220d5a, #343066);
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
                 cursor: pointer;
                 overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+
+                @media (prefers-color-scheme: dark) {
+                    background: rgba(0, 0, 0, 0.1);
+                    border-color: rgba(255, 255, 255, 0.05);
+                }
 
                 &:hover {
-                    color: #1E40AF;
-                    opacity: 0.9;
-                    transform: scale(1.05);
-                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+                    color: var(--text-prominent);
+                    background: rgba(255, 255, 255, 0.08);
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+
+                    @media (prefers-color-scheme: dark) {
+                        background: rgba(0, 0, 0, 0.2);
+                    }
                 }
 
                 // animated white underline
@@ -231,7 +260,7 @@
                     transform: translateX(-50%);
                     width: 0%;
                     height: 3px;
-                    background: #fff;
+                    background: rgba(255, 255, 255, 0.5);
                     border-radius: 3px;
                     transition: width 0.3s ease;
                 }
@@ -245,7 +274,7 @@
                     width: 1.6rem;
                     height: 1.6rem;
                     margin-inline-end: 0.8rem;
-                    filter: brightness(0) invert(1);
+                    fill: currentColor;
 
                     @include mobile-or-tablet-screen {
                         margin-inline-end: 0.2rem;
@@ -806,6 +835,7 @@
 }
 
 @keyframes blink {
+
     0%,
     100% {
         border: 1px solid $color-red;
