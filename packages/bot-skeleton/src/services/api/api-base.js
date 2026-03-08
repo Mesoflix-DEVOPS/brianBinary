@@ -14,16 +14,29 @@ class APIBase {
     has_activeSymbols = false;
     is_stopping = false;
 
+    initializing = false;
+
     async init(force_update = false, account_id) {
         if (getLoginId()) {
+            if (this.initializing) {
+                // eslint-disable-next-line no-console
+                console.log(`[APIBase] Already initializing for ${this.account_id}. Skipping redundant init.`);
+                return;
+            }
+            this.initializing = true;
             this.toggleRunButton(true);
             if (force_update) this.terminate();
             this.api = generateDerivApiInstance();
+
+            // Notify system that a new API instance is available
+            globalObserver.emit('api.new_instance', this.api);
+
             this.initEventListeners();
             await this.authorizeAndSubscribe(account_id);
             if (this.time_interval) clearInterval(this.time_interval);
             this.time_interval = null;
             this.getTime();
+            this.initializing = false;
         }
     }
 
@@ -38,6 +51,7 @@ class APIBase {
     terminate() {
         // eslint-disable-next-line no-console
         console.log('connection terminated');
+        this.clearSubscriptions();
         if (this.api) this.api.disconnect();
     }
 

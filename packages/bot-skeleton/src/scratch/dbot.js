@@ -21,6 +21,14 @@ class DBot {
         this.before_run_funcs = [];
         this.symbol = null;
         this.is_bot_running = false;
+
+        globalObserver.register('api.new_instance', () => {
+            if (this.interpreter) {
+                // eslint-disable-next-line no-console
+                console.log('[DBot] New API instance detected. Re-initializing interpreter.');
+                this.initializeInterpreter();
+            }
+        });
     }
 
     /**
