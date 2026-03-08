@@ -41,10 +41,17 @@ class APIBase {
         if (this.api) this.api.disconnect();
     }
 
+    listeners_initialized = false;
+
     initEventListeners() {
-        if (window) {
+        if (window && !this.listeners_initialized) {
             window.addEventListener('online', this.reconnectIfNotConnected);
             window.addEventListener('focus', this.reconnectIfNotConnected);
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    this.reconnectIfNotConnected();
+                }
+            });
 
             // Re-authorize with the correct account when user switches demo/real.
             // Deriv updates `active_loginid` in localStorage whenever account changes.
@@ -55,6 +62,7 @@ class APIBase {
                     this.createNewInstance(event.newValue);
                 }
             });
+            this.listeners_initialized = true;
         }
     }
 

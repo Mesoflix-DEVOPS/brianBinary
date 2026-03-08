@@ -55,8 +55,17 @@ const AppWrapper = observer(() => {
     const { clear } = summary_card;
     const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const { ui } = useStore();
+    const { ui, client } = useStore();
     const { url_hashed_values, is_desktop, is_dark_mode_on } = ui;
+    const { loginid } = client;
+
+    React.useEffect(() => {
+        if (loginid) {
+            // eslint-disable-next-line no-console
+            console.log(`[AppWrapper] Syncing Bot API with new loginid: ${loginid}`);
+            api_base.createNewInstance(loginid);
+        }
+    }, [loginid]);
     const tabLabelColor = is_dark_mode_on ? '#ffffff' : '#4a3000';
     const Dptool = lazy(() => import('../dptool/dptool'));
 

@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { observer, useStore } from '@deriv/stores';
 import styles from './trader.module.scss';
 
 interface ClientAccount {
     [key: string]: {
         currency?: string;
-        // Add other account properties as needed
+        token?: string;
     };
 }
 
@@ -14,20 +15,20 @@ interface DTraderAutoLoginProps {
     defaultSymbol?: string;
 }
 
-const DTraderAutoLogin: React.FC<DTraderAutoLoginProps> = ({
+const DTraderAutoLogin = observer(({
     dtraderUrl = 'https://deriv-dtrader.vercel.app/dtrader',
     appId = 118970,
     defaultSymbol = '1HZ100V',
-}) => {
+}: DTraderAutoLoginProps) => {
+    const { client } = useStore();
+    const { loginid, accounts } = client;
     const [iframeSrc, setIframeSrc] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const authCheckInterval = useRef<NodeJS.Timeout>();
 
     const validateDtraderUrl = (url: string): boolean => {
         try {
             const { hostname } = new URL(url);
-            // Add your trusted domains here
             const trustedDomains = [
                 'deriv-dta.vercel.app',
                 'deriv.com',
@@ -47,18 +48,8 @@ const DTraderAutoLogin: React.FC<DTraderAutoLoginProps> = ({
         }
 
         try {
-            const clientAccountsStr = localStorage.getItem('client.accounts') || '{}';
-            let currency = 'USD';
-
-            try {
-                const clientAccounts: ClientAccount = JSON.parse(clientAccountsStr);
-                if (clientAccounts[loginId]?.currency) {
-                    currency = clientAccounts[loginId].currency!;
-                }
-            } catch (error) {
-                console.error('Error parsing client accounts:', error);
-                setError('Error loading account information');
-            }
+            const active_account = accounts?.[loginId] || {};
+            const currency = active_account.currency || 'USD';
 
             const params = new URLSearchParams({
                 acct1: loginId,
@@ -81,18 +72,18 @@ const DTraderAutoLogin: React.FC<DTraderAutoLoginProps> = ({
         } finally {
             setIsLoading(false);
         }
-    }, [appId, defaultSymbol, dtraderUrl]);
+    }, [appId, defaultSymbol, dtraderUrl, accounts]);
 
     const checkAuthAndUpdate = useCallback(() => {
         try {
-            const activeLoginId = localStorage.getItem('active_loginid');
+            const activeLoginId = loginid || localStorage.getItem('active_loginid');
             const clientAccountsStr = localStorage.getItem('client.accounts') || '{}';
-
             let authToken = '';
+
             if (activeLoginId) {
                 try {
-                    const clientAccounts = JSON.parse(clientAccountsStr);
-                    authToken = clientAccounts[activeLoginId]?.token || '';
+                    const clientAccounts: ClientAccount = JSON.parse(clientAccountsStr);
+                    authToken = clientAccounts[activeLoginId]?.token || accounts?.[activeLoginId]?.token || '';
                 } catch (e) {
                     console.error('Error parsing client accounts for token:', e);
                 }
@@ -109,27 +100,31 @@ const DTraderAutoLogin: React.FC<DTraderAutoLoginProps> = ({
             setError('Authentication check failed');
             setIsLoading(false);
         }
-    }, [buildIframeUrl, defaultSymbol, dtraderUrl]);
+    }, [buildIframeUrl, defaultSymbol, dtraderUrl, loginid, accounts]);
 
     useEffect(() => {
         checkAuthAndUpdate();
 
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'authToken' || e.key === 'active_loginid' || e.key === 'clientAccounts') {
+            if (e.key === 'active_loginid' || e.key === 'client.accounts') {
+                checkAuthAndUpdate();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
                 checkAuthAndUpdate();
             }
         };
 
         window.addEventListener('storage', handleStorageChange);
-
-        // Set up interval with cleanup
-        authCheckInterval.current = setInterval(checkAuthAndUpdate, 5000); // Reduced frequency to 5 seconds
+        window.addEventListener('focus', checkAuthAndUpdate);
+        window.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
-            if (authCheckInterval.current) {
-                clearInterval(authCheckInterval.current);
-            }
+            window.removeEventListener('focus', checkAuthAndUpdate);
+            window.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [checkAuthAndUpdate]);
 
