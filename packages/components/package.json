@@ -5,7 +5,7 @@
     "main": "src/index.ts",
     "private": true,
     "engines": {
-        "node": "22.x"
+        "node": "18.x"
     },
     "scripts": {
         "start": "rimraf lib && npm run test && npm run serve",
@@ -100,3 +100,4 @@
         "usehooks-ts": "^2.7.0"
     }
 }
+

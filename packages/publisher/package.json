@@ -10,7 +10,7 @@
     "access": "public"
   },
   "engines": {
-    "node": "22.x"
+    "node": "18.x"
   },
   "scripts": {
     "start": "echo \"No start specified\"",
@@ -33,3 +33,4 @@
     "@babel/preset-react": "^7.24.7"
   }
 }
+

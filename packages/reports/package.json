@@ -19,7 +19,7 @@
         "deploy:production": "echo \"No deploy:production specified\""
     },
     "engines": {
-        "node": "22.x"
+        "node": "18.x"
     },
     "repository": {
         "type": "git",
@@ -119,3 +119,4 @@
         "workbox-webpack-plugin": "^6.0.2"
     }
 }
+
