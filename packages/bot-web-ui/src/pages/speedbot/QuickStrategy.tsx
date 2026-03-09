@@ -4,6 +4,7 @@ import { useStore } from '@deriv/stores';
 import { Text, Icon, Loading } from '@deriv/components';
 import { Localize } from '@deriv/translations';
 import { api_base } from '@deriv/bot-skeleton/src/services/api/api-base';
+import { observer as globalObserver } from '@deriv/bot-skeleton/src/utils/observer';
 import { AnalysisHeader, ConfigurationPanel, TransactionTable, EvenOddAnalysis, RiseFallAnalysis } from './StrategyComponents';
 import { trading_logic, TradeParams } from './TradingLogic';
 import './quick-strategy.scss';
@@ -147,6 +148,27 @@ const QuickStrategy = observer(() => {
             if (res.pip_size !== undefined) setPipSize(res.pip_size);
         }
     }, []);
+
+    // Effect to handle API initialization and account switches
+    useEffect(() => {
+        const onApiReady = () => {
+            fetchSymbols();
+            if (selectedMarket) {
+                requestTickHistory(selectedMarket);
+            }
+        };
+
+        globalObserver.register('api.new_instance', onApiReady);
+
+        // Also trigger immediately if api is already there
+        if (api_base.api) {
+            onApiReady();
+        }
+
+        return () => {
+            globalObserver.unregister('api.new_instance', onApiReady);
+        };
+    }, [fetchSymbols, requestTickHistory, selectedMarket]);
 
     // Effect for subscription and real-time updates
     useEffect(() => {
