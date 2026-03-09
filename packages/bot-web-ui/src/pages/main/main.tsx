@@ -27,7 +27,8 @@ import Signals from '../signals';
 import Tradingview from '../tradingview';
 import SpeedBot from '../speedbot';
 import DTraderAutoLogin from '../trader';
-import { FaChartBar, FaChartLine, FaPuzzlePiece, FaChessKnight, FaUsers, FaShieldAlt, FaRobot, FaTachometerAlt, FaExchangeAlt, FaCopy, FaLightbulb, FaBolt, FaGlobe } from 'react-icons/fa';
+import Dcircles from '../dcircles';
+import { FaChartBar, FaChartLine, FaPuzzlePiece, FaChessKnight, FaUsers, FaShieldAlt, FaRobot, FaTachometerAlt, FaExchangeAlt, FaCopy, FaLightbulb, FaBolt, FaGlobe, FaChartPie } from 'react-icons/fa';
 import { MdSchema, MdGridOn } from 'react-icons/md';
 
 
@@ -64,6 +65,7 @@ const AppWrapper = observer(() => {
 
 
     const hash = ['dashboard', 'bot_builder', 'chart', 'trader', 'botlist', 'finesttool', 'copytrading', 'dptool', 'smartedge', 'signals'];
+    const updated_hash = ['dashboard', 'bot_builder', 'speedbot', 'chart', 'dcircles', 'tutorials', 'botlist', 'finesttool', 'copytrading', 'dptool'];
 
     let tab_value: number | string = active_tab;
     const GetHashedValue = (tab: number) => {
@@ -104,7 +106,7 @@ const AppWrapper = observer(() => {
             if (!is_desktop) handleTabChange(Number(active_hash_tab));
             init_render.current = false;
         } else {
-            window.location.hash = hash[active_tab] || hash[0];
+            window.location.hash = updated_hash[active_tab] || updated_hash[0];
         }
         if (active_tour !== '') {
             setActiveTour('');
@@ -218,6 +220,17 @@ const AppWrapper = observer(() => {
                             id={TAB_IDS[DBOT_TABS.CHART]}
                         >
                             <Chart />
+                        </div>
+                        <div
+                            label={
+                                <span style={{ color: tabLabelColor, fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', fontSize: '12px' }}>
+                                    <FaChartPie style={{ marginRight: '8px' }} />
+                                    <Localize i18n_default_text='dcircles' />
+                                </span>
+                            }
+                            id={TAB_IDS[DBOT_TABS.DCIRCLES]}
+                        >
+                            <Dcircles />
                         </div>
                         <div
                             label={
