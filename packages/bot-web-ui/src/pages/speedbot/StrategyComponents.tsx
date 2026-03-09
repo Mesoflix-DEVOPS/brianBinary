@@ -88,19 +88,23 @@ export const EvenOddAnalysis = observer(({ digit_counts }: { digit_counts: numbe
 
     return (
         <div className="qs-eo-analysis">
+            <div className="qs-analysis-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <FaLayerGroup style={{ color: 'var(--primary-color)' }} />
+                <Text size="s" weight="bold" family="outfit"><Localize i18n_default_text="Even vs Odd Distribution" /></Text>
+            </div>
             <div className="qs-analysis-item">
-                <Text size="xs" color="less-prominent"><Localize i18n_default_text="EVEN" /></Text>
+                <Text size="xs" color="less-prominent" weight="bold" family="outfit"><Localize i18n_default_text="EVEN" /></Text>
                 <div className="qs-eo-bar-container">
                     <div className="qs-eo-bar even" style={{ width: `${evenPercent}%` }}></div>
                 </div>
-                <Text size="s" weight="bold">{evenPercent}%</Text>
+                <Text size="s" weight="bold" family="outfit">{evenPercent}%</Text>
             </div>
             <div className="qs-analysis-item">
-                <Text size="xs" color="less-prominent"><Localize i18n_default_text="ODD" /></Text>
+                <Text size="xs" color="less-prominent" weight="bold" family="outfit"><Localize i18n_default_text="ODD" /></Text>
                 <div className="qs-eo-bar-container">
                     <div className="qs-eo-bar odd" style={{ width: `${oddPercent}%` }}></div>
                 </div>
-                <Text size="s" weight="bold">{oddPercent}%</Text>
+                <Text size="s" weight="bold" family="outfit">{oddPercent}%</Text>
             </div>
         </div>
     );
@@ -115,12 +119,18 @@ export const RiseFallAnalysis = observer(({ rise_fall_stats }: { rise_fall_stats
     return (
         <div className="qs-rf-analysis">
             <div className="qs-analysis-item">
-                <Icon icon="IcArrowUp" custom_color="#00c853" size={16} />
-                <Text size="s" weight="bold" custom_color="#00c853">{risePercent}%</Text>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00ffa3' }}>
+                    <Icon icon="IcArrowUp" custom_color="#00ffa3" size={24} />
+                    <Text size="m" weight="bold" family="outfit" custom_color="#00ffa3">{risePercent}%</Text>
+                </div>
+                <Text size="xs" color="less-prominent" weight="bold" family="outfit"><Localize i18n_default_text="RISE" /></Text>
             </div>
             <div className="qs-analysis-item">
-                <Icon icon="IcArrowDown" custom_color="#ff1744" size={16} />
-                <Text size="s" weight="bold" custom_color="#ff1744">{fallPercent}%</Text>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4d4d' }}>
+                    <Icon icon="IcArrowDown" custom_color="#ff4d4d" size={24} />
+                    <Text size="m" weight="bold" family="outfit" custom_color="#ff4d4d">{fallPercent}%</Text>
+                </div>
+                <Text size="xs" color="less-prominent" weight="bold" family="outfit"><Localize i18n_default_text="FALL" /></Text>
             </div>
         </div>
     );
@@ -144,8 +154,11 @@ export const ConfigurationPanel = observer(({
         <div className="qs-config-panel">
             <div className="qs-config-section">
                 <div className="qs-config-item">
-                    <Text size="xs" color="less-prominent"><Localize i18n_default_text="STAKE (USD)" /></Text>
+                    <Text size="xs" weight="bold" family="outfit" color="less-prominent">
+                        <Localize i18n_default_text="STAKE (USD)" />
+                    </Text>
                     <Input
+                        className="dc-input"
                         type="number"
                         value={stake}
                         onChange={(e: any) => setStake(e.target.value)}
@@ -153,35 +166,40 @@ export const ConfigurationPanel = observer(({
                     />
                 </div>
                 <div className="qs-config-item">
-                    <Text size="xs" color="less-prominent"><Localize i18n_default_text="MODE" /></Text>
+                    <Text size="xs" weight="bold" family="outfit" color="less-prominent">
+                        <Localize i18n_default_text="MODE" />
+                    </Text>
                     <div className="qs-mode-selector">
-                        <Button
+                        <button
                             className={`qs-mode-btn ${mode === 'Normal' ? 'active' : ''}`}
                             onClick={() => setMode('Normal')}
                             disabled={is_running}
                         >
                             <Localize i18n_default_text="Normal" />
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             className={`qs-mode-btn ${mode === 'Bulk' ? 'active' : ''}`}
                             onClick={() => setMode('Bulk')}
                             disabled={is_running}
                         >
                             <FaLayerGroup /> <Localize i18n_default_text="Bulk" />
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             className={`qs-mode-btn ${mode === 'Flash' ? 'active' : ''}`}
                             onClick={() => setMode('Flash')}
                             disabled={is_running}
                         >
                             <FaBolt /> <Localize i18n_default_text="Flash" />
-                        </Button>
+                        </button>
                     </div>
                 </div>
                 {mode === 'Flash' && (
                     <div className="qs-config-item">
-                        <Text size="xs" color="less-prominent"><Localize i18n_default_text="FLASH LIMIT" /></Text>
+                        <Text size="xs" weight="bold" family="outfit" color="less-prominent">
+                            <Localize i18n_default_text="FLASH LIMIT" />
+                        </Text>
                         <Input
+                            className="dc-input"
                             type="number"
                             value={flashLimit}
                             onChange={(e: any) => setFlashLimit(e.target.value)}
@@ -190,8 +208,11 @@ export const ConfigurationPanel = observer(({
                     </div>
                 )}
                 <div className="qs-config-item">
-                    <Text size="xs" color="less-prominent"><Localize i18n_default_text="STOP LOSS" /></Text>
+                    <Text size="xs" weight="bold" family="outfit" color="less-prominent">
+                        <Localize i18n_default_text="STOP LOSS" />
+                    </Text>
                     <Input
+                        className="dc-input"
                         type="number"
                         value={stopLoss}
                         onChange={(e: any) => setStopLoss(e.target.value)}
@@ -202,13 +223,13 @@ export const ConfigurationPanel = observer(({
 
             <div className="qs-action-buttons">
                 {!is_running ? (
-                    <Button primary large className="qs-run-btn" onClick={onRun}>
+                    <button className="qs-run-btn" onClick={onRun}>
                         <Localize i18n_default_text="RUN STRATEGY" />
-                    </Button>
+                    </button>
                 ) : (
-                    <Button danger large className="qs-stop-btn" onClick={onStop}>
+                    <button className="qs-stop-btn" onClick={onStop}>
                         <Localize i18n_default_text="STOP STRATEGY" />
-                    </Button>
+                    </button>
                 )}
             </div>
         </div>

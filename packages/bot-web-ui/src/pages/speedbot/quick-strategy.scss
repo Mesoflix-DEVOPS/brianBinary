@@ -4,8 +4,8 @@
 // Global Fix for Scrolling
 body,
 html {
-    overflow-y: auto !important;
-    height: auto !important;
+    overflow: hidden !important; // Prevent double scrollbars
+    height: 100% !important;
 }
 
 .qs-container {
@@ -33,12 +33,13 @@ html {
     flex-direction: column;
     gap: 16px;
     padding: 16px;
-    min-height: 100vh;
+    height: 100vh; // Fix height to viewport
     background: #06090f; // Solid core background
     color: var(--text-primary);
     font-family: 'Outfit', sans-serif;
     overflow-x: hidden;
-    overflow-y: visible; // Key for scrolling
+    overflow-y: auto; // Enable internal scrolling
+    -webkit-overflow-scrolling: touch;
 
     @mixin glass-panel {
         background: var(--glass-bg);
@@ -336,7 +337,8 @@ html {
         display: flex;
         flex-direction: column;
         gap: 24px;
-        padding-bottom: 40px; // Extra space at bottom
+        width: 100%;
+        margin-top: 10px;
 
         @media (min-width: 1024px) {
             flex-direction: row;
@@ -346,12 +348,12 @@ html {
 
     .qs-config-panel {
         @include glass-panel;
-        padding: 32px;
+        padding: 28px;
         width: 100%;
         max-width: 450px;
         flex-shrink: 0;
 
-        .qs-config-group {
+        .qs-config-section {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -369,20 +371,175 @@ html {
             }
 
             .dc-input {
-                background: rgba(255, 255, 255, 0.05);
+                background: rgba(0, 0, 0, 0.2);
                 border: 1px solid var(--glass-border);
                 color: #ffffff;
-                border-radius: 16px;
-                padding: 14px 18px;
+                border-radius: 12px;
+                padding: 12px 16px;
                 font-weight: 600;
                 width: 100%;
-                font-size: 16px;
+                font-size: 15px;
                 transition: 0.3s;
 
                 &:focus {
                     border-color: var(--primary-color);
-                    background: rgba(255, 255, 255, 0.08);
+                    background: rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 0 10px var(--primary-glow);
                 }
+
+                input {
+                    color: #ffffff !important;
+                }
+            }
+
+            .qs-mode-selector {
+                display: flex;
+                gap: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 6px;
+                border-radius: 14px;
+                border: 1px solid var(--glass-border);
+
+                .qs-mode-btn {
+                    flex: 1;
+                    height: 38px;
+                    border-radius: 10px;
+                    border: none;
+                    background: transparent;
+                    color: var(--text-secondary);
+                    font-size: 12px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    transition: all 0.3s;
+
+                    &:hover {
+                        color: #ffffff;
+                        background: rgba(255, 255, 255, 0.05);
+                    }
+
+                    &.active {
+                        background: var(--primary-color);
+                        color: #06090f;
+                        box-shadow: 0 4px 12px var(--primary-glow);
+                    }
+
+                    svg {
+                        font-size: 14px;
+                    }
+                }
+            }
+        }
+
+        .qs-action-buttons {
+            margin-top: 32px;
+
+            button {
+                width: 100%;
+                height: 54px;
+                border-radius: 16px;
+                font-size: 16px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                transition: all 0.3s;
+                border: none;
+                cursor: pointer;
+
+                &.qs-run-btn {
+                    background: linear-gradient(135deg, #00ffa3, #00d2ff);
+                    color: #06090f;
+                    box-shadow: 0 8px 24px rgba(0, 255, 163, 0.3);
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 32px rgba(0, 255, 163, 0.4);
+                    }
+                }
+
+                &.qs-stop-btn {
+                    background: linear-gradient(135deg, #ff4d4d, #ff1744);
+                    color: #ffffff;
+                    box-shadow: 0 8px 24px rgba(255, 77, 77, 0.3);
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 32px rgba(255, 77, 77, 0.4);
+                    }
+                }
+            }
+        }
+    }
+
+    // Even/Odd & Rise/Fall Analysis
+    .qs-analysis-row {
+        width: 100%;
+    }
+
+    .qs-eo-analysis,
+    .qs-rf-analysis {
+        @include glass-panel;
+        padding: 24px 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+
+        .qs-analysis-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            span:first-child {
+                min-width: 50px;
+            }
+
+            .qs-eo-bar-container {
+                flex: 1;
+                height: 12px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 6px;
+                overflow: hidden;
+                position: relative;
+
+                .qs-eo-bar {
+                    height: 100%;
+                    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+                    &.even {
+                        background: linear-gradient(to right, #00d2ff, #00ffa3);
+                        box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+                    }
+
+                    &.odd {
+                        background: linear-gradient(to right, #ffab00, #ff4d4d);
+                        box-shadow: 0 0 10px rgba(255, 171, 0, 0.3);
+                    }
+                }
+            }
+
+            .dc-text {
+                font-family: 'Outfit';
+                font-feature-settings: 'tnum';
+            }
+        }
+    }
+
+    .qs-rf-analysis {
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 32px;
+
+        .qs-analysis-item {
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+
+            svg {
+                font-size: 24px;
+                filter: drop-shadow(0 0 8px currentColor);
             }
         }
     }
@@ -392,6 +549,7 @@ html {
         @include glass-panel;
         padding: 24px;
         flex: 1;
+        overflow: hidden; // Contain the table
 
         .qs-table-header {
             display: flex;
@@ -401,11 +559,27 @@ html {
             color: var(--primary-color);
             font-weight: 800;
             font-size: 16px;
+
+            svg {
+                font-size: 20px;
+            }
         }
 
         .qs-table-container {
             width: 100%;
             overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 4px;
+
+            &::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--glass-border);
+                border-radius: 10px;
+            }
 
             table {
                 width: 100%;
@@ -419,6 +593,10 @@ html {
                     font-weight: 800;
                     padding: 12px;
                     text-transform: uppercase;
+                    position: sticky;
+                    top: 0;
+                    background: var(--bg-base);
+                    z-index: 10;
                 }
 
                 td {
@@ -442,12 +620,28 @@ html {
 
                 .result-won {
                     color: var(--profit-color);
-                    font-weight: 800;
+                    text-shadow: 0 0 8px rgba(0, 255, 163, 0.3);
                 }
 
                 .result-lost {
                     color: var(--loss-color);
-                    font-weight: 800;
+                    text-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
+                }
+
+                .profit {
+                    color: var(--profit-color);
+                }
+
+                .loss {
+                    color: var(--loss-color);
+                }
+
+                .qs-empty-row {
+                    text-align: center;
+                    color: var(--text-secondary);
+                    opacity: 0.5;
+                    border: none;
+                    background: transparent;
                 }
             }
         }
