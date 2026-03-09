@@ -10,29 +10,68 @@ import { formatMoney } from '@deriv/shared';
 export const AnalysisHeader = observer(({ digit_counts, last_digit }: { digit_counts: number[], last_digit: number | null }) => {
     const total = digit_counts.reduce((a, b) => a + b, 0) || 1;
 
+    // Calculate ranks
+    const sortedIndices = digit_counts
+        .map((count, index) => ({ index, count }))
+        .sort((a, b) => b.count - a.count);
+
+    const rankHighest = sortedIndices[0].index;
+    const rankSecondHighest = sortedIndices[1].index;
+    const rankLowest = sortedIndices[9].index;
+    const rankPreLowest = sortedIndices[8].index;
+
+    const highestPercent = ((digit_counts[rankHighest] / total) * 100).toFixed(2);
+    const lowestPercent = ((digit_counts[rankLowest] / total) * 100).toFixed(2);
+
     return (
         <div className="qs-analysis-header">
-            <div className="qs-risk-badge" style={{ marginBottom: '16px' }}>
-                <Icon icon="IcAlertDanger" custom_color="#ff7a00" size={14} />
-                <Localize i18n_default_text="RISK DISCLAIMER" />
-            </div>
             <div className="qs-analysis-title">
-                <MdTrendingUp className="qs-icon" />
-                <Text size="xs" weight="bold" family="outfit"><Localize i18n_default_text="DIGIT DISTRIBUTION (1000 TICKS)" /></Text>
+                <MdTrendingUp className="qs-icon" style={{ marginRight: '10px', fontSize: '20px' }} />
+                <Localize i18n_default_text="Digit Distribution (1000 Ticks)" />
             </div>
             <div className="qs-digit-circles">
                 {digit_counts.map((count, index) => {
-                    const percentage = ((count / total) * 100).toFixed(1);
-                    const isActive = last_digit === index;
+                    const percentage = (count / total) * 100;
+                    const dashOffset = 201 - (201 * percentage) / 100;
+
+                    let rankClass = 'rank-default';
+                    let tagClass = '';
+                    if (index === rankHighest) { rankClass = 'rank-1'; tagClass = 'highlight-high'; }
+                    else if (index === rankSecondHighest) rankClass = 'rank-2';
+                    else if (index === rankLowest) { rankClass = 'rank-lowest'; tagClass = 'highlight-low'; }
+                    else if (index === rankPreLowest) rankClass = 'rank-pre-lowest';
+
                     return (
-                        <div key={index} className={`qs-digit-item ${isActive ? 'active' : ''}`}>
-                            <div className="qs-digit-circle">
+                        <div key={index} className={`qs-digit-item ${last_digit === index ? 'active' : ''}`}>
+                            <div className={`qs-digit-circle-wrapper ${rankClass}`}>
+                                <svg viewBox="0 0 68 68">
+                                    <circle className="bg" cx="34" cy="34" r="32" />
+                                    <circle
+                                        className="progress"
+                                        cx="34"
+                                        cy="34"
+                                        r="32"
+                                        style={{ strokeDashoffset: dashOffset }}
+                                    />
+                                </svg>
                                 <span className="qs-digit-value">{index}</span>
-                                <div className="qs-digit-percent">{percentage}%</div>
+                            </div>
+                            <div className={`qs-digit-percent-tag ${tagClass}`}>
+                                {percentage.toFixed(1)}%
                             </div>
                         </div>
                     );
                 })}
+            </div>
+            <div className="qs-stat-summary">
+                <span>
+                    <Localize i18n_default_text="Highest: " />
+                    <b className="high">{highestPercent}%</b>
+                </span>
+                <span>
+                    <Localize i18n_default_text="Lowest: " />
+                    <b className="low">{lowestPercent}%</b>
+                </span>
             </div>
         </div>
     );
