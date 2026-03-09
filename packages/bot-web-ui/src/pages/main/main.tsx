@@ -25,7 +25,7 @@ import Botlist from '../botlist';
 import Smartedge from '../smartedge';
 import Signals from '../signals';
 import Tradingview from '../tradingview';
-import SpeedBot from '../speedbot';
+import QuickStrategy from '../speedbot';
 import DTraderAutoLogin from '../trader';
 import Dcircles from '../dcircles';
 import { FaChartBar, FaChartLine, FaPuzzlePiece, FaChessKnight, FaUsers, FaShieldAlt, FaRobot, FaTachometerAlt, FaExchangeAlt, FaCopy, FaLightbulb, FaBolt, FaGlobe, FaChartPie } from 'react-icons/fa';
@@ -65,7 +65,7 @@ const AppWrapper = observer(() => {
 
 
     const hash = ['dashboard', 'bot_builder', 'chart', 'trader', 'botlist', 'finesttool', 'copytrading', 'dptool', 'smartedge', 'signals'];
-    const updated_hash = ['dashboard', 'bot_builder', 'speedbot', 'chart', 'dcircles', 'tutorials', 'botlist', 'finesttool', 'copytrading', 'dptool'];
+    const updated_hash = ['dashboard', 'bot_builder', 'quick-strategy', 'chart', 'dcircles', 'tutorials', 'botlist', 'finesttool', 'copytrading', 'dptool'];
 
     let tab_value: number | string = active_tab;
     const GetHashedValue = (tab: number) => {
@@ -202,13 +202,13 @@ const AppWrapper = observer(() => {
                         <div
                             label={
                                 <span style={{ color: tabLabelColor, fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', fontSize: '12px' }}>
-                                    <FaBolt style={{ marginRight: '8px' }} />
-                                    <Localize i18n_default_text='SpeedBot' />
+                                    <MdGridOn style={{ marginRight: '8px' }} />
+                                    <Localize i18n_default_text='Quick Strategy' />
                                 </span>
                             }
-                            id={TAB_IDS[DBOT_TABS.SPEEDBOT]}
+                            id={TAB_IDS[DBOT_TABS.QUICK_STRATEGY]}
                         >
-                            <SpeedBot />
+                            <QuickStrategy />
                         </div>
                         <div
                             label={
