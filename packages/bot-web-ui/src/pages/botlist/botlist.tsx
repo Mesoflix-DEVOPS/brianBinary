@@ -25,7 +25,7 @@ const DashboardBotList = observer(() => {
         loadStrategies();
     }, []);
 
-    const filteredBots = load_modal.dashboard_strategies?.filter(bot =>
+    const filteredBots = load_modal.dashboard_strategies?.filter((bot: any) =>
         bot.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -77,10 +77,11 @@ const DashboardBotList = observer(() => {
                             <Icon icon="IcSearch" className={styles.searchIcon} />
                             <input
                                 type="text"
-                                placeholder="Search bots..."
+                                placeholder="Search premium bots..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className={styles.searchInput}
+                                autoComplete="off"
                             />
                             {searchTerm && (
                                 <button
@@ -109,7 +110,7 @@ const DashboardBotList = observer(() => {
                         <>
                             {filteredBots?.length > 0 ? (
                                 <div className={styles.grid}>
-                                    {filteredBots.map((workspace, index) => (
+                                    {filteredBots.map((workspace: any, index: number) => (
                                         <RecentWorkspace
                                             key={workspace.id}
                                             workspace={workspace}

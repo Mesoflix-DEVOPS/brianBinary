@@ -219,8 +219,8 @@
 
                 &--main {
                     &__tabs {
-                        display: flex;
-                        justify-content: flex-start;
+                        display: block;
+                        width: 100%;
 
                         @include mobile-or-tablet-screen {
                             flex-direction: column;

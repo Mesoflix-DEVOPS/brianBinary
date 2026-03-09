@@ -45,6 +45,9 @@
         radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.1), transparent 70%), var(--bg-primary);
     display: flex;
     flex-direction: column;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 @keyframes pulse {
@@ -62,9 +65,9 @@
 }
 
 .analysisMa {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 48px 24px 100px;
+    max-width: 100%;
+    margin: 0;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 32px;
