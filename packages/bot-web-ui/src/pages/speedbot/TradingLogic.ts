@@ -1,5 +1,6 @@
 import { api_base } from '@deriv/bot-skeleton/src/services/api/api-base';
 import { doUntilDone } from '@deriv/bot-skeleton/src/services/tradeEngine/utils/helpers';
+import { copy_trading_logic } from '../copytrading/CopyTradingLogic';
 
 export type TradeMode = 'Normal' | 'Bulk' | 'Flash';
 
@@ -66,6 +67,12 @@ class TradingLogic {
                 console.error('[TradeLogic] Buy error:', buy_res.error);
                 throw buy_res.error;
             }
+
+            // Broadcast trade for Manual Mirroring
+            copy_trading_logic.broadcastTrade({
+                ...cleanedParams,
+                amount: ask_price || cleanedParams.amount
+            });
 
             return buy_res.buy;
         } catch (error) {

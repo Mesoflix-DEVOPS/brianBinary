@@ -4,6 +4,74 @@ class CopyTradingLogic {
     private copier_token: string = '';
     private is_copying: boolean = false;
     private is_paused: boolean = false;
+    private is_manual_mirror: boolean = false;
+    private is_master: boolean = false;
+    private broadcast_channel: BroadcastChannel | null = null;
+    private trade_listener: ((data: any) => void) | null = null;
+
+    constructor() {
+        if (typeof window !== 'undefined') {
+            this.broadcast_channel = new BroadcastChannel('deriv_manual_mirror');
+            this.initBroadcastListener();
+        }
+    }
+
+    private initBroadcastListener() {
+        if (!this.broadcast_channel) return;
+        this.broadcast_channel.onmessage = (event) => {
+            if (this.is_manual_mirror && !this.is_master) {
+                console.log('[CopyTrading] Received trade signal:', event.data);
+                this.executeMirroredTrade(event.data);
+            }
+        };
+    }
+
+    setManualMirror(enabled: boolean) {
+        this.is_manual_mirror = enabled;
+        if (enabled) {
+            console.log('[CopyTrading] Manual Mirror enabled');
+        }
+    }
+
+    setAsMaster(enabled: boolean) {
+        this.is_master = enabled;
+        console.log(`[CopyTrading] Set as Master: ${enabled}`);
+    }
+
+    private async executeMirroredTrade(tradeData: any) {
+        if (!api_base.api || !this.copier_token) return;
+
+        const { symbol, contract_type, amount, basis, prediction, duration, duration_unit } = tradeData;
+
+        const request = {
+            buy: 1, // This is just a placeholder to use the correct params
+            price: amount,
+            subscribe: 1,
+            parameters: {
+                amount,
+                basis,
+                contract_type,
+                currency: 'USD', // Should ideally come from client store but logic doesn't have it
+                duration,
+                duration_unit,
+                symbol,
+                prediction
+            }
+        };
+
+        console.log('[CopyTrading] Executing mirrored trade:', request);
+        try {
+            await api_base.api.send(request);
+        } catch (e) {
+            console.error('[CopyTrading] Mirror execution failed:', e);
+        }
+    }
+
+    broadcastTrade(tradeData: any) {
+        if (this.is_manual_mirror && this.is_master && this.broadcast_channel) {
+            this.broadcast_channel.postMessage(tradeData);
+        }
+    }
 
     setCopierToken(token: string) {
         this.copier_token = token;

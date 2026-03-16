@@ -168,44 +168,49 @@ const QuickStrategy = observer(() => {
     }, [selectedMarket, requestTickHistory]);
 
     useEffect(() => {
-        const tickHandler = (data: any) => {
+        if (!selectedMarket || !api_base.api) return;
+
+        const handleMessage = (data: any) => {
             if (data?.msg_type === 'tick' && data?.tick) {
-                console.log('[QuickStrategy] Tick received:', data.tick.symbol, data.tick.quote);
-                if (data.tick.symbol === selectedMarket) {
-                    const tick = data.tick;
+                const tick = data.tick;
+                if (tick.symbol === selectedMarket) {
+                    console.log('[QuickStrategy] Live Tick:', tick.symbol, tick.quote);
                     const newPrice = Number(tick.quote);
                     setCurrentPrice(newPrice);
 
                     const QuotePipSize = tick.pip_size || pipSize || 2;
-                    setPipSize(QuotePipSize);
+                    // Skip updating global pipSize if it's already set to prevent jitter
 
                     const quoteStr = newPrice.toFixed(QuotePipSize);
                     const lastDigitDigit = Number(quoteStr.charAt(quoteStr.length - 1));
                     setLastDigit(lastDigitDigit);
 
+                    // Update counts
                     setDigitCounts(prev => {
                         const next = [...prev];
                         next[lastDigitDigit]++;
                         return next;
                     });
 
+                    // Update rise/fall
                     if (lastTickRef.current) {
                         const prevPrice = Number(lastTickRef.current.quote);
                         if (newPrice > prevPrice) setRiseFallStats(p => ({ ...p, rise: p.rise + 1 }));
                         else if (newPrice < prevPrice) setRiseFallStats(p => ({ ...p, fall: p.fall + 1 }));
                     }
-                    lastTickRef.current = tick;
+                    lastTickRef.current = { quote: newPrice, symbol: tick.symbol };
                 }
             }
         };
 
-        console.log('[QuickStrategy] Registering tick observer for', selectedMarket);
-        globalObserver.register('api.tick', tickHandler);
+        console.log('[QuickStrategy] Subscribing to direct message stream for', selectedMarket);
+        const unsubscribe = api_base.api.onMessage(handleMessage);
+
         return () => {
-            console.log('[QuickStrategy] Unregistering tick observer');
-            globalObserver.unregister('api.tick', tickHandler);
+            console.log('[QuickStrategy] Cleaning up message stream');
+            unsubscribe();
         };
-    }, [selectedMarket]);
+    }, [selectedMarket, pipSize]);
 
     const handleMarketChange = (newSymbol: string) => {
         setSelectedMarket(newSymbol);

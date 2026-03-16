@@ -13,6 +13,8 @@ const TokenManager: React.FC = observer(() => {
     const [isMobile, setIsMobile] = useState(false);
     const [isCopyTrading, setIsCopyTrading] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
+    const [isManualMirror, setIsManualMirror] = useState(false);
+    const [isMaster, setIsMaster] = useState(false);
 
     // Advanced features
     const [maxStake, setMaxStake] = useState(100);
@@ -160,6 +162,20 @@ const TokenManager: React.FC = observer(() => {
         }
     };
 
+    const toggleManualMirror = () => {
+        const next = !isManualMirror;
+        setIsManualMirror(next);
+        copy_trading_logic.setManualMirror(next);
+        setToast({ type: 'ok', text: `Manual Mirror ${next ? 'enabled' : 'disabled'}` });
+    };
+
+    const toggleMasterMode = () => {
+        const next = !isMaster;
+        setIsMaster(next);
+        copy_trading_logic.setAsMaster(next);
+        setToast({ type: 'ok', text: next ? 'This tab is now the Master' : 'Master mode disabled' });
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -297,6 +313,22 @@ const TokenManager: React.FC = observer(() => {
                                 />
                             </div>
                         </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', borderLeft: isMobile ? 'none' : '1px solid #eee', paddingLeft: isMobile ? '0' : '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+                                <span style={{ fontSize: '14px', fontWeight: '600' }}>Manual Mirror Mode</span>
+                                <input type="checkbox" checked={isManualMirror} onChange={toggleManualMirror} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                            </div>
+                            {isManualMirror && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '8px' }}>
+                                    <span style={{ fontSize: '14px', fontWeight: '600' }}>Set as Master Tab</span>
+                                    <input type="checkbox" checked={isMaster} onChange={toggleMasterMode} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                                </div>
+                            )}
+                            <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>
+                                * Use Manual Mirror if official copytrading returns 'Not Allowed'. Open Master and Follower in different tabs.
+                            </p>
+                        </div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px', flexWrap: 'wrap' }}>
@@ -414,6 +446,17 @@ const TokenManager: React.FC = observer(() => {
                     <li>Set your preferred stake limits and target assets to filter trades.</li>
                     <li>The system will automatically mirror trades from the source account.</li>
                 </ol>
+
+                <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#fff4e5', borderLeft: '4px solid #ff9800', borderRadius: '4px' }}>
+                    <p style={{ margin: '0 0 5px 0', fontWeight: '700', color: '#d32f2f' }}>⚠️ Error "CopyTradingNotAllowed"?</p>
+                    <p style={{ margin: 0, fontSize: '13px' }}>
+                        This happens if the trader hasn't enabled the "Strategy Provider" setting on Deriv.
+                        <br /><br />
+                        <strong>Solution 1 (Official):</strong> Go to <a href="https://nakala.deriv.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2196F3', textDecoration: 'underline' }}>Deriv Nakala</a> and enable "Strategy Provider" on your account.
+                        <br /><br />
+                        <strong>Solution 2 (Bypass):</strong> Enable <strong>Manual Mirror Mode</strong> above. Open your Master account in one tab (set to 'Master') and your Follower account in another tab.
+                    </p>
+                </div>
             </div>
 
             {/* Toast Notification */}
