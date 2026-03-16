@@ -104,7 +104,17 @@ const QuickStrategy = observer(() => {
     }, []);
 
     useEffect(() => {
-        fetchSymbols();
+        const checkApiAndFetch = async () => {
+            console.log('[QuickStrategy] Checking API status...');
+            if (api_base.api) {
+                console.log('[QuickStrategy] API ready, fetching symbols...');
+                await fetchSymbols();
+            } else {
+                console.log('[QuickStrategy] API not ready, waiting...');
+                setTimeout(checkApiAndFetch, 1000);
+            }
+        };
+        checkApiAndFetch();
     }, [fetchSymbols]);
 
     useEffect(() => {
@@ -120,33 +130,40 @@ const QuickStrategy = observer(() => {
 
     useEffect(() => {
         const tickHandler = (data: any) => {
-            if (data?.msg_type === 'tick' && data?.tick?.symbol === selectedMarket) {
-                const tick = data.tick;
-                const newPrice = Number(tick.quote);
-                setCurrentPrice(newPrice);
-                setPipSize(tick.pip_size || 2);
+            if (data?.msg_type === 'tick' && data?.tick) {
+                console.log('[QuickStrategy] Tick received:', data.tick.symbol, data.tick.quote);
+                if (data.tick.symbol === selectedMarket) {
+                    const tick = data.tick;
+                    const newPrice = Number(tick.quote);
+                    setCurrentPrice(newPrice);
+                    setPipSize(tick.pip_size || 2);
 
-                const quoteStr = tick.quote.toString();
-                const lastDigit = Number(quoteStr.charAt(quoteStr.length - 1));
-                setLastDigit(lastDigit);
+                    const quoteStr = tick.quote.toString();
+                    const lastDigitDigit = Number(quoteStr.charAt(quoteStr.length - 1));
+                    setLastDigit(lastDigitDigit);
 
-                setDigitCounts(prev => {
-                    const next = [...prev];
-                    next[lastDigit]++;
-                    return next;
-                });
+                    setDigitCounts(prev => {
+                        const next = [...prev];
+                        next[lastDigitDigit]++;
+                        return next;
+                    });
 
-                if (lastTickRef.current) {
-                    const prevPrice = Number(lastTickRef.current.quote);
-                    if (newPrice > prevPrice) setRiseFallStats(p => ({ ...p, rise: p.rise + 1 }));
-                    else if (newPrice < prevPrice) setRiseFallStats(p => ({ ...p, fall: p.fall + 1 }));
+                    if (lastTickRef.current) {
+                        const prevPrice = Number(lastTickRef.current.quote);
+                        if (newPrice > prevPrice) setRiseFallStats(p => ({ ...p, rise: p.rise + 1 }));
+                        else if (newPrice < prevPrice) setRiseFallStats(p => ({ ...p, fall: p.fall + 1 }));
+                    }
+                    lastTickRef.current = tick;
                 }
-                lastTickRef.current = tick;
             }
         };
 
+        console.log('[QuickStrategy] Registering tick observer for', selectedMarket);
         globalObserver.register('api.tick', tickHandler);
-        return () => globalObserver.unregister('api.tick', tickHandler);
+        return () => {
+            console.log('[QuickStrategy] Unregistering tick observer');
+            globalObserver.unregister('api.tick', tickHandler);
+        };
     }, [selectedMarket]);
 
     const handleMarketChange = (newSymbol: string) => {
@@ -341,27 +358,38 @@ const QuickStrategy = observer(() => {
             </div>
 
             <div className="qs-main-content">
-                <ConfigurationPanel
-                    stake={stake}
-                    setStake={setStake}
-                    mode={mode}
-                    setMode={setMode}
-                    stopLoss={stopLoss}
-                    setStopLoss={setStopLoss}
-                    takeProfit={takeProfit}
-                    setTakeProfit={setTakeProfit}
-                    runsBeforeCountdown={runsBeforeCountdown}
-                    setRunsBeforeCountdown={setRunsBeforeCountdown}
-                    countdownTime={countdownTime}
-                    setCountdownTime={setCountdownTime}
-                    bulkCount={bulkCount}
-                    setBulkCount={setBulkCount}
-                    is_running={isRunning}
-                    onRun={handleRun}
-                    onStop={handleStop}
-                    isOpen={isConfigOpen}
-                    onToggle={() => setIsConfigOpen(!isConfigOpen)}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '550px' }}>
+                    <ConfigurationPanel
+                        stake={stake}
+                        setStake={setStake}
+                        mode={mode}
+                        setMode={setMode}
+                        stopLoss={stopLoss}
+                        setStopLoss={setStopLoss}
+                        takeProfit={takeProfit}
+                        setTakeProfit={setTakeProfit}
+                        runsBeforeCountdown={runsBeforeCountdown}
+                        setRunsBeforeCountdown={setRunsBeforeCountdown}
+                        countdownTime={countdownTime}
+                        setCountdownTime={setCountdownTime}
+                        bulkCount={bulkCount}
+                        setBulkCount={setBulkCount}
+                        isOpen={isConfigOpen}
+                        onToggle={() => setIsConfigOpen(!isConfigOpen)}
+                    />
+
+                    <div className="qs-action-buttons main-action" style={{ marginTop: '0' }}>
+                        {!isRunning ? (
+                            <button className="qs-run-btn" onClick={handleRun}>
+                                <Localize i18n_default_text="RUN STRATEGY" />
+                            </button>
+                        ) : (
+                            <button className="qs-stop-btn" onClick={handleStop}>
+                                <Localize i18n_default_text="STOP STRATEGY" />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <TransactionTable trades={trades} />
             </div>

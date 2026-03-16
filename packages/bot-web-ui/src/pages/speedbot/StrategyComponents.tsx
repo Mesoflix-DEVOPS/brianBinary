@@ -150,13 +150,8 @@ export const ConfigurationPanel = observer(({
     setRunsBeforeCountdown,
     countdownTime,
     setCountdownTime,
-    flashLimit,
-    setFlashLimit,
     bulkCount,
     setBulkCount,
-    is_running,
-    onRun,
-    onStop,
     isOpen,
     onToggle
 }: any) => {
@@ -273,18 +268,6 @@ export const ConfigurationPanel = observer(({
                                 </select>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="qs-action-buttons main-action" style={{ marginTop: '20px' }}>
-                        {!is_running ? (
-                            <button className="qs-run-btn" onClick={onRun}>
-                                <Localize i18n_default_text="RUN STRATEGY" />
-                            </button>
-                        ) : (
-                            <button className="qs-stop-btn" onClick={onStop}>
-                                <Localize i18n_default_text="STOP STRATEGY" />
-                            </button>
-                        )}
                     </div>
                 </div>
             )}

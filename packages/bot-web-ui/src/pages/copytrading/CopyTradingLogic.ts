@@ -39,14 +39,14 @@ class CopyTradingLogic {
         try {
             const response = await api_base.api.send(request);
             if (response.error) {
-                console.error('[CopyTrading] Start error:', response.error);
+                console.error('[CopyTrading] Start error details:', JSON.stringify(response.error, null, 2));
                 return { error: response.error };
             }
             this.is_copying = true;
             this.is_paused = false;
             return { data: response.copy_start };
         } catch (err) {
-            console.error('[CopyTrading] Start exception:', err);
+            console.error('[CopyTrading] Start exception full detail:', err);
             return { error: err };
         }
     }
