@@ -1,4 +1,4 @@
-import RiskManagementCalculator from './riskManagementCalculator';
-import './riskManagementCalculator.module.scss';
+import RiskManager from './RiskManager';
+import './risk-manager.scss';
 
-export default RiskManagementCalculator;
+export default RiskManager;

@@ -11,6 +11,7 @@ const TokenManager: React.FC = observer(() => {
     const [toast, setToast] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
     const [isMobile, setIsMobile] = useState(false);
     const [isCopyTrading, setIsCopyTrading] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
 
     // Advanced features
     const [assets, setAssets] = useState('');
@@ -75,6 +76,9 @@ const TokenManager: React.FC = observer(() => {
             if (saved) {
                 setSavedToken(saved);
                 copy_trading_logic.setCopierToken(saved);
+                const status = copy_trading_logic.getStatus();
+                setIsCopyTrading(status.is_copying);
+                setIsPaused(status.is_paused);
             }
         } catch (error) {
             console.error('Error loading saved token:', error);
@@ -98,11 +102,16 @@ const TokenManager: React.FC = observer(() => {
     };
 
     const removeToken = () => {
+        if (!window.confirm('Are you sure you want to disconnect? This will stop any active copy trading.')) return;
         try {
             localStorage.removeItem('deriv_copier_token');
             localStorage.removeItem('deriv_copy_user_token');
+            if (isCopyTrading) {
+                copy_trading_logic.stopCopying(client.loginid);
+            }
             setSavedToken(null);
             setIsCopyTrading(false);
+            setIsPaused(false);
             setToast({ type: 'ok', text: 'Token removed successfully' });
         } catch (error) {
             console.error('Error removing token:', error);
@@ -127,6 +136,7 @@ const TokenManager: React.FC = observer(() => {
                 setToast({ type: 'err', text: `Failed: ${res.error.message || 'Unknown error'}` });
             } else {
                 setIsCopyTrading(true);
+                setIsPaused(false);
                 setToast({ type: 'ok', text: 'Copy trading active!' });
             }
         } else {
@@ -135,8 +145,20 @@ const TokenManager: React.FC = observer(() => {
                 setToast({ type: 'err', text: `Stop Failed: ${res.error.message || 'Unknown error'}` });
             } else {
                 setIsCopyTrading(false);
+                setIsPaused(false);
                 setToast({ type: 'ok', text: 'Copy trading stopped' });
             }
+        }
+    };
+
+    const handlePause = async () => {
+        const res = await copy_trading_logic.pauseCopying(client.loginid);
+        if (res.error) {
+            setToast({ type: 'err', text: `Pause Failed: ${res.error.message || 'Unknown error'}` });
+        } else {
+            setIsCopyTrading(false);
+            setIsPaused(true);
+            setToast({ type: 'ok', text: 'Copy trading paused' });
         }
     };
 
@@ -292,42 +314,68 @@ const TokenManager: React.FC = observer(() => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px', flexWrap: 'wrap' }}>
                         <button
                             style={{
                                 backgroundColor: isCopyTrading ? '#f44336' : '#4CAF50',
                                 color: 'white',
                                 border: 'none',
-                                padding: isMobile ? '16px 24px' : '18px 48px',
-                                borderRadius: '12px',
+                                padding: isMobile ? '16px 24px' : '15px 35px',
+                                borderRadius: '10px',
                                 fontWeight: '700',
-                                fontSize: isMobile ? '16px' : '20px',
+                                fontSize: isMobile ? '16px' : '16px',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 cursor: 'pointer',
                                 boxShadow: isCopyTrading ? '0 4px 14px rgba(244, 67, 54, 0.4)' : '0 4px 14px rgba(76, 175, 80, 0.4)',
                                 width: isMobile ? '100%' : 'auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '12px'
+                                justifyContent: 'center',
+                                gap: '10px'
                             }}
                             onClick={toggleCopyTrading}
                         >
-                            {isCopyTrading ? '🛑 Stop Copying' : '🚀 Start Copy Trading'}
+                            {isCopyTrading ? '🛑 Stop' : (isPaused ? '🚀 Resume' : '🚀 Start')}
                         </button>
+
+                        {isCopyTrading && (
+                            <button
+                                style={{
+                                    backgroundColor: '#FF9800',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: isMobile ? '16px 24px' : '15px 35px',
+                                    borderRadius: '10px',
+                                    fontWeight: '700',
+                                    fontSize: isMobile ? '16px' : '16px',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 14px rgba(255, 152, 0, 0.4)',
+                                    width: isMobile ? '100%' : 'auto',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                                onClick={handlePause}
+                            >
+                                <span>⏸️ Pause</span>
+                            </button>
+                        )}
                     </div>
 
                     <div style={{
                         marginTop: '20px',
                         padding: '12px',
-                        backgroundColor: isCopyTrading ? '#e8f5e9' : '#f5f5f5',
+                        backgroundColor: isCopyTrading ? '#e8f5e9' : (isPaused ? '#fff3e0' : '#f5f5f5'),
                         borderRadius: '8px',
                         textAlign: 'center' as const,
                         fontSize: '14px',
                         fontWeight: '600',
-                        color: isCopyTrading ? '#2e7d32' : '#757575',
-                        border: `1px solid ${isCopyTrading ? '#c8e6c9' : '#e0e0e0'}`
+                        color: isCopyTrading ? '#2e7d32' : (isPaused ? '#ef6c00' : '#757575'),
+                        border: `1px solid ${isCopyTrading ? '#c8e6c9' : (isPaused ? '#ffe0b2' : '#e0e0e0')}`
                     }}>
-                        Status: {isCopyTrading ? 'ACTIVE' : 'INACTIVE'}
+                        Status: {isCopyTrading ? 'ACTIVE' : (isPaused ? 'PAUSED' : 'INACTIVE')}
                     </div>
                 </div>
             )}

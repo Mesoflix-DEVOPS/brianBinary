@@ -279,6 +279,18 @@ const AppWrapper = observer(() => {
                             <Copytrading />
                         </div>
 
+                        <div
+                            label={
+                                <span style={{ color: tabLabelColor, fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', fontSize: '12px' }}>
+                                    <FaShieldAlt size={14} style={{ marginRight: '8px' }} />
+                                    Risk Manager
+                                </span>
+                            }
+                            id='id-risk-manager'
+                        >
+                            <RiskManagementCalculator />
+                        </div>
+
 
 
 

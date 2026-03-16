@@ -158,11 +158,6 @@ export const ConfigurationPanel = observer(({
     onRun,
     onStop,
     isOpen,
-    onToggle,
-    is_running,
-    onRun,
-    onStop,
-    isOpen,
     onToggle
 }: any) => {
     return (
