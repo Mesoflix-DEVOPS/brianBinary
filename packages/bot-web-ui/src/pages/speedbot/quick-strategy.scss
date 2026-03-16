@@ -174,7 +174,7 @@ html {
     .qs-config-panel {
         @include glass-panel;
         width: 100%;
-        max-width: 400px;
+        max-width: 450px;
         flex-shrink: 0;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
@@ -191,7 +191,7 @@ html {
         }
 
         &.open {
-            max-height: 800px;
+            max-height: 90vh; // Increased to accommodate more settings
 
             .qs-config-content {
                 opacity: 1;
@@ -215,6 +215,7 @@ html {
             padding: 24px;
             transition: opacity 0.3s;
             overflow-y: auto;
+            max-height: 70vh;
 
             .qs-config-section {
                 display: flex;
@@ -234,24 +235,70 @@ html {
                     font-weight: 800;
                     color: var(--text-secondary);
                     text-transform: uppercase;
-                    margin-bottom: 8px;
+                    margin-bottom: 10px;
                     display: block;
+                    letter-spacing: 1px;
                 }
 
                 .dc-input {
                     background: rgba(0, 0, 0, 0.2);
                     border: 1px solid var(--glass-border);
                     color: #ffffff;
-                    border-radius: 10px;
-                    padding: 10px 14px;
+                    border-radius: 12px;
+                    padding: 12px 16px;
+                    font-weight: 600;
                     width: 100%;
+                    font-size: 15px;
+                    transition: 0.3s;
+
+                    &:focus {
+                        border-color: var(--primary-color);
+                        background: rgba(255, 255, 255, 0.05);
+                        box-shadow: 0 0 10px var(--primary-glow);
+                    }
 
                     input {
                         color: #ffffff !important;
                     }
+                }
 
-                    &:focus-within {
-                        border-color: var(--primary-color);
+                .qs-mode-selector {
+                    display: flex;
+                    gap: 8px;
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: 6px;
+                    border-radius: 14px;
+                    border: 1px solid var(--glass-border);
+
+                    .qs-mode-btn {
+                        flex: 1;
+                        height: 38px;
+                        border-radius: 10px;
+                        border: none;
+                        background: transparent;
+                        color: var(--text-secondary);
+                        font-size: 12px;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        transition: all 0.3s;
+
+                        &:hover {
+                            color: #ffffff;
+                            background: rgba(255, 255, 255, 0.05);
+                        }
+
+                        &.active {
+                            background: var(--primary-color);
+                            color: #06090f;
+                            box-shadow: 0 4px 12px var(--primary-glow);
+                        }
+
+                        svg {
+                            font-size: 14px;
+                        }
                     }
                 }
             }
@@ -259,16 +306,19 @@ html {
 
         .qs-action-buttons {
             padding: 16px 24px 24px;
-
-            &.main-action {
-                border-top: 1px solid var(--glass-border);
-            }
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid var(--glass-border);
 
             button {
                 width: 100%;
-                height: 48px;
-                border-radius: 14px;
+                height: 52px;
+                border-radius: 16px;
+                font-size: 15px;
                 font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
                 cursor: pointer;
                 transition: all 0.3s;
                 border: none;
@@ -276,12 +326,23 @@ html {
                 &.qs-run-btn {
                     background: linear-gradient(135deg, #00ffa3, #00d2ff);
                     color: #06090f;
-                    box-shadow: 0 4px 15px rgba(0, 255, 163, 0.3);
+                    box-shadow: 0 8px 20px rgba(0, 255, 163, 0.3);
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 28px rgba(0, 255, 163, 0.4);
+                    }
                 }
 
                 &.qs-stop-btn {
-                    background: #ff4d4d;
+                    background: linear-gradient(135deg, #ff4d4d, #ff1744);
                     color: #fff;
+                    box-shadow: 0 8px 20px rgba(255, 77, 77, 0.3);
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 28px rgba(255, 77, 77, 0.4);
+                    }
                 }
 
                 &.qs-copy-btn {
@@ -301,6 +362,12 @@ html {
                     color: #ff4d4d;
                 }
             }
+        }
+
+        @media (max-width: 1024px) {
+            max-width: 100%;
+            height: auto;
+            max-height: none;
         }
     }
 
@@ -487,140 +554,6 @@ html {
         }
     }
 
-    .qs-config-panel {
-        @include glass-panel;
-        padding: 28px;
-        width: 100%;
-        max-width: 450px;
-        flex-shrink: 0;
-        max-height: 80vh; // Prevent it from being too tall
-        overflow-y: auto; // Allow internal scrolling if content overflows
-        padding-bottom: 40px; // Extra padding for buttons
-
-        @media (max-width: 1024px) {
-            max-width: 100%;
-            max-height: none; // Allow it to expand on mobile, container will scroll
-        }
-
-        .qs-config-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .qs-config-item {
-            label {
-                font-size: 11px;
-                font-weight: 800;
-                color: var(--text-secondary);
-                text-transform: uppercase;
-                margin-bottom: 10px;
-                display: block;
-                letter-spacing: 1px;
-            }
-
-            .dc-input {
-                background: rgba(0, 0, 0, 0.2);
-                border: 1px solid var(--glass-border);
-                color: #ffffff;
-                border-radius: 12px;
-                padding: 12px 16px;
-                font-weight: 600;
-                width: 100%;
-                font-size: 15px;
-                transition: 0.3s;
-
-                &:focus {
-                    border-color: var(--primary-color);
-                    background: rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 0 10px var(--primary-glow);
-                }
-
-                input {
-                    color: #ffffff !important;
-                }
-            }
-
-            .qs-mode-selector {
-                display: flex;
-                gap: 8px;
-                background: rgba(0, 0, 0, 0.2);
-                padding: 6px;
-                border-radius: 14px;
-                border: 1px solid var(--glass-border);
-
-                .qs-mode-btn {
-                    flex: 1;
-                    height: 38px;
-                    border-radius: 10px;
-                    border: none;
-                    background: transparent;
-                    color: var(--text-secondary);
-                    font-size: 12px;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 6px;
-                    transition: all 0.3s;
-
-                    &:hover {
-                        color: #ffffff;
-                        background: rgba(255, 255, 255, 0.05);
-                    }
-
-                    &.active {
-                        background: var(--primary-color);
-                        color: #06090f;
-                        box-shadow: 0 4px 12px var(--primary-glow);
-                    }
-
-                    svg {
-                        font-size: 14px;
-                    }
-                }
-            }
-        }
-
-        .qs-action-buttons {
-            margin-top: 32px;
-
-            button {
-                width: 100%;
-                height: 54px;
-                border-radius: 16px;
-                font-size: 16px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                transition: all 0.3s;
-                border: none;
-                cursor: pointer;
-
-                &.qs-run-btn {
-                    background: linear-gradient(135deg, #00ffa3, #00d2ff);
-                    color: #06090f;
-                    box-shadow: 0 8px 24px rgba(0, 255, 163, 0.3);
-
-                    &:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 12px 32px rgba(0, 255, 163, 0.4);
-                    }
-                }
-
-                &.qs-stop-btn {
-                    background: linear-gradient(135deg, #ff4d4d, #ff1744);
-                    color: #ffffff;
-                    box-shadow: 0 8px 24px rgba(255, 77, 77, 0.3);
-
-                    &:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 12px 32px rgba(255, 77, 77, 0.4);
-                    }
-                }
-            }
-        }
-    }
 
     // Even/Odd & Rise/Fall Analysis
     .qs-analysis-row {
