@@ -1,4 +1,5 @@
 import { api_base } from '@deriv/bot-skeleton/src/services/api/api-base';
+import { generateDerivApiInstance } from '@deriv/bot-skeleton/src/services/api/appId';
 
 class CopyTradingLogic {
     private copier_token: string = '';
@@ -127,7 +128,7 @@ class CopyTradingLogic {
     }
 
     async enableCopyingForToken(token: string, profileData: any = {}) {
-        const tempApi = api_base.generateDerivApiInstance();
+        const tempApi = generateDerivApiInstance();
         try {
             await tempApi.authorize(token);
             const request = {
