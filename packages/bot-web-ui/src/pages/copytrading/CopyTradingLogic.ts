@@ -85,6 +85,47 @@ class CopyTradingLogic {
         };
     }
 
+    async getAccountSettings() {
+        if (!api_base.api) return { error: { message: 'API not initialized' } };
+
+        try {
+            const response = await api_base.api.send({ get_settings: 1 });
+            if (response.error) {
+                console.error('[CopyTrading] getAccountSettings error:', response.error);
+                return { error: response.error };
+            }
+            return { data: response.get_settings };
+        } catch (err) {
+            console.error('[CopyTrading] getAccountSettings exception:', err);
+            return { error: err };
+        }
+    }
+
+    async becomeTrader(profileData: any = {}) {
+        if (!api_base.api) return { error: { message: 'API not initialized' } };
+
+        // mandatory fields often required by set_settings on Deriv
+        const request = {
+            set_settings: 1,
+            allow_copiers: 1,
+            ...profileData
+        };
+
+        console.log('[CopyTrading] Enabling trader mode:', request);
+
+        try {
+            const response = await api_base.api.send(request);
+            if (response.error) {
+                console.error('[CopyTrading] becomeTrader error:', response.error);
+                return { error: response.error };
+            }
+            return { data: response.set_settings };
+        } catch (err) {
+            console.error('[CopyTrading] becomeTrader exception:', err);
+            return { error: err };
+        }
+    }
+
     async startCopying(trader_login_id: string, options: {
         assets?: string[];
         max_trade_stake?: number;

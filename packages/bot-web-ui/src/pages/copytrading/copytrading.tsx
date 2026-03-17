@@ -15,6 +15,10 @@ const TokenManager: React.FC = observer(() => {
     const [isPaused, setIsPaused] = useState(false);
     const [isManualMirror, setIsManualMirror] = useState(false);
     const [isMaster, setIsMaster] = useState(false);
+    const [activeTab, setActiveTab] = useState<'copier' | 'trader'>('copier');
+    const [isTraderEnabled, setIsTraderEnabled] = useState(false);
+    const [traderSettings, setTraderSettings] = useState<any>(null);
+    const [isLoadingSettings, setIsLoadingSettings] = useState(false);
 
     // Advanced features
     const [maxStake, setMaxStake] = useState(100);
@@ -70,6 +74,21 @@ const TokenManager: React.FC = observer(() => {
             return () => clearTimeout(timer);
         }
     }, [toast]);
+
+    useEffect(() => {
+        const fetchTraderStatus = async () => {
+            if (client.is_logged_in) {
+                setIsLoadingSettings(true);
+                const res = await copy_trading_logic.getAccountSettings();
+                if (res.data) {
+                    setIsTraderEnabled(!!res.data.allow_copiers);
+                    setTraderSettings(res.data);
+                }
+                setIsLoadingSettings(false);
+            }
+        };
+        fetchTraderStatus();
+    }, [client.is_logged_in]);
 
     // Load saved token on component mount
     useEffect(() => {
@@ -176,6 +195,35 @@ const TokenManager: React.FC = observer(() => {
         setToast({ type: 'ok', text: next ? 'This tab is now the Master' : 'Master mode disabled' });
     };
 
+    const handleBecomeTrader = async () => {
+        if (!client.is_logged_in) {
+            setToast({ type: 'err', text: 'Please login to Deriv first' });
+            return;
+        }
+
+        const profileData = {
+            account_opening_reason: traderSettings?.account_opening_reason || 'Speculative',
+            address_city: traderSettings?.address_city || 'Update Required',
+            address_line_1: traderSettings?.address_line_1 || 'Update Required',
+            address_postcode: traderSettings?.address_postcode || '000000',
+            phone: traderSettings?.phone || '00000000',
+            place_of_birth: traderSettings?.place_of_birth || 'ar',
+            tax_identification_number: traderSettings?.tax_identification_number || '000000',
+            tax_residence: traderSettings?.tax_residence || 'hk',
+        };
+
+        const res = await copy_trading_logic.becomeTrader(profileData);
+        if (res.error) {
+            setToast({ type: 'err', text: `Failed to enable: ${res.error.message || 'Unknown error'}` });
+        } else {
+            setIsTraderEnabled(true);
+            setToast({ type: 'ok', text: 'Trader mode enabled! You can now share your trades.' });
+            // Refresh settings
+            const refresh = await copy_trading_logic.getAccountSettings();
+            if (refresh.data) setTraderSettings(refresh.data);
+        }
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -198,266 +246,315 @@ const TokenManager: React.FC = observer(() => {
                 color: '#0a1aadff',
                 textAlign: isMobile ? 'center' : 'left' as const
             }}>
-                Token Manager & Copy Settings
+                Social Trading Dashboard
             </h2>
 
-            {/* Token Input Section */}
+            {/* Tabs */}
             <div style={{
+                display: 'flex',
+                gap: '10px',
+                marginBottom: '20px',
                 backgroundColor: 'white',
-                borderRadius: '12px',
-                padding: isMobile ? '16px' : '20px',
-                marginTop: '5px',
-                boxSizing: 'border-box' as const,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                padding: '5px',
+                borderRadius: '10px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
             }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px', width: '100%' }}>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: isMobile ? 'column' : 'row' as const,
-                        alignItems: 'center',
-                        gap: isMobile ? '15px' : '12px',
-                        width: '100%'
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column' as const,
-                            alignItems: 'center',
-                            backgroundColor: '#f5f5f5',
-                            padding: isMobile ? '10px 14px' : '12px 16px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            border: '1px solid #e0e0e0',
-                            alignSelf: isMobile ? 'center' : 'stretch'
-                        }}>
-                            <FaYoutube style={{ color: '#FF0000', fontSize: isMobile ? '22px' : '24px' }} />
-                            <span style={{ color: '#333', fontSize: isMobile ? '10px' : '11px', marginTop: '3px', fontWeight: '500' }}>
-                                Tutorial
-                            </span>
-                        </div>
-                        <input
-                            type="password"
-                            placeholder="Enter API token"
-                            className="qs-input"
-                            value={token}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToken(e.target.value)}
-                        />
-                        <button
-                            style={{
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                border: 'none',
-                                padding: isMobile ? '14px 16px' : '12px 20px',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '6px',
-                                whiteSpace: 'nowrap' as const,
-                                transition: 'all 0.2s',
-                                opacity: !token ? 0.6 : 1,
-                                cursor: !token ? 'not-allowed' : 'pointer',
-                                fontSize: isMobile ? '15px' : '14px',
-                                flex: isMobile ? 1 : 'none',
-                                fontWeight: '600',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                            }}
-                            onClick={saveToken}
-                            disabled={!token}
-                        >
-                            <span>Save Token</span>
-                        </button>
-                    </div>
-                </div>
+                <button
+                    onClick={() => setActiveTab('copier')}
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: activeTab === 'copier' ? '#0a1aadff' : 'transparent',
+                        color: activeTab === 'copier' ? 'white' : '#666',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    Follow a Trader
+                </button>
+                <button
+                    onClick={() => setActiveTab('trader')}
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: activeTab === 'trader' ? '#0a1aadff' : 'transparent',
+                        color: activeTab === 'trader' ? 'white' : '#666',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    Share Your Trades
+                </button>
             </div>
 
-            {/* Advanced Settings Section */}
-            {savedToken && (
-                <div style={{
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    padding: isMobile ? '20px' : '24px',
-                    marginTop: '20px',
-                    boxSizing: 'border-box' as const,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                        <FaCog style={{ color: '#4CAF50', fontSize: '20px' }} />
-                        <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>Advanced Copy Settings</h3>
-                    </div>
+            {activeTab === 'copier' ? (
+                <>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FaShieldAlt style={{ color: '#f44336' }} />
-                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>Max Stake</label>
+                    {/* Token Input Section */}
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        padding: isMobile ? '16px' : '20px',
+                        marginTop: '5px',
+                        boxSizing: 'border-box' as const,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px', width: '100%' }}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: isMobile ? 'column' : 'row' as const,
+                                alignItems: 'center',
+                                gap: isMobile ? '15px' : '12px',
+                                width: '100%'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column' as const,
+                                    alignItems: 'center',
+                                    backgroundColor: '#f5f5f5',
+                                    padding: isMobile ? '10px 14px' : '12px 16px',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    border: '1px solid #e0e0e0',
+                                    alignSelf: isMobile ? 'center' : 'stretch'
+                                }}>
+                                    <FaYoutube style={{ color: '#FF0000', fontSize: isMobile ? '22px' : '24px' }} />
+                                    <span style={{ color: '#333', fontSize: isMobile ? '10px' : '11px', marginTop: '3px', fontWeight: '500' }}>
+                                        Tutorial
+                                    </span>
                                 </div>
                                 <input
-                                    type="number"
+                                    type="password"
+                                    placeholder="Enter API token"
                                     className="qs-input"
-                                    value={maxStake}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxStake(Number(e.target.value))}
+                                    value={token}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToken(e.target.value)}
                                 />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FaShieldAlt style={{ color: '#4CAF50' }} />
-                                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>Min Stake</label>
-                                </div>
-                                <input
-                                    type="number"
-                                    className="qs-input"
-                                    value={minStake}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMinStake(Number(e.target.value))}
-                                />
+                                <button
+                                    style={{
+                                        backgroundColor: '#4CAF50',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: isMobile ? '14px 16px' : '12px 20px',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        whiteSpace: 'nowrap' as const,
+                                        transition: 'all 0.2s',
+                                        opacity: !token ? 0.6 : 1,
+                                        cursor: !token ? 'not-allowed' : 'pointer',
+                                        fontSize: isMobile ? '15px' : '14px',
+                                        flex: isMobile ? 1 : 'none',
+                                        fontWeight: '600',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}
+                                    onClick={saveToken}
+                                    disabled={!token}
+                                >
+                                    <span>Save Token</span>
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', borderLeft: isMobile ? 'none' : '1px solid #eee', paddingLeft: isMobile ? '0' : '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                                <span style={{ fontSize: '14px', fontWeight: '600' }}>Manual Mirror Mode</span>
-                                <input type="checkbox" checked={isManualMirror} onChange={toggleManualMirror} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                    {/* Advanced Settings Section */}
+                    {savedToken && (
+                        <div style={{
+                            backgroundColor: 'white',
+                            borderRadius: '12px',
+                            padding: isMobile ? '20px' : '24px',
+                            marginTop: '20px',
+                            boxSizing: 'border-box' as const,
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                                <FaCog style={{ color: '#4CAF50', fontSize: '20px' }} />
+                                <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>Advanced Copy Settings</h3>
                             </div>
-                            {isManualMirror && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '8px' }}>
-                                    <span style={{ fontSize: '14px', fontWeight: '600' }}>Set as Master Tab</span>
-                                    <input type="checkbox" checked={isMaster} onChange={toggleMasterMode} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <FaShieldAlt style={{ color: '#f44336' }} />
+                                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>Max Stake</label>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            className="qs-input"
+                                            value={maxStake}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxStake(Number(e.target.value))}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <FaShieldAlt style={{ color: '#4CAF50' }} />
+                                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#666' }}>Min Stake</label>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            className="qs-input"
+                                            value={minStake}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMinStake(Number(e.target.value))}
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                            <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>
-                                * Use Manual Mirror if official copytrading returns 'Not Allowed'. Open Master and Follower in different tabs.
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', borderLeft: isMobile ? 'none' : '1px solid #eee', paddingLeft: isMobile ? '0' : '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+                                        <span style={{ fontSize: '14px', fontWeight: '600' }}>Manual Mirror Mode</span>
+                                        <input type="checkbox" checked={isManualMirror} onChange={toggleManualMirror} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                                    </div>
+                                    {isManualMirror && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '8px' }}>
+                                            <span style={{ fontSize: '14px', fontWeight: '600' }}>Set as Master Tab</span>
+                                            <input type="checkbox" checked={isMaster} onChange={toggleMasterMode} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                                        </div>
+                                    )}
+                                    <p style={{ fontSize: '11px', color: '#888', margin: 0 }}>
+                                        * Use Manual Mirror if official copytrading returns 'Not Allowed'. Open Master and Follower in different tabs.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px', flexWrap: 'wrap' }}>
+                                <button
+                                    style={{
+                                        backgroundColor: isCopyTrading ? '#f44336' : '#4CAF50',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: isMobile ? '16px 24px' : '15px 35px',
+                                        borderRadius: '10px',
+                                        fontWeight: '700',
+                                        fontSize: isMobile ? '16px' : '16px',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        cursor: 'pointer',
+                                        boxShadow: isCopyTrading ? '0 4px 14px rgba(244, 67, 54, 0.4)' : '0 4px 14px rgba(76, 175, 80, 0.4)',
+                                        width: isMobile ? '100%' : 'auto',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px'
+                                    }}
+                                    onClick={toggleCopyTrading}
+                                >
+                                    {isCopyTrading ? '🛑 Stop' : (isPaused ? '🚀 Resume' : '🚀 Start')}
+                                </button>
+
+                                {isCopyTrading && (
+                                    <button
+                                        style={{
+                                            backgroundColor: '#FF9800',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: isMobile ? '16px 24px' : '15px 35px',
+                                            borderRadius: '10px',
+                                            fontWeight: '700',
+                                            fontSize: isMobile ? '16px' : '16px',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 4px 14px rgba(255, 152, 0, 0.4)',
+                                            width: isMobile ? '100%' : 'auto',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px'
+                                        }}
+                                        onClick={handlePause}
+                                    >
+                                        <span>⏸️ Pause</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            <div style={{
+                                marginTop: '20px',
+                                padding: '12px',
+                                backgroundColor: isCopyTrading ? '#e8f5e9' : (isPaused ? '#fff3e0' : '#f5f5f5'),
+                                borderRadius: '8px',
+                                textAlign: 'center' as const,
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: isCopyTrading ? '#2e7d32' : (isPaused ? '#ef6c00' : '#757575'),
+                                border: `1px solid ${isCopyTrading ? '#c8e6c9' : (isPaused ? '#ffe0b2' : '#e0e0e0')}`
+                            }}>
+                                Status: {isCopyTrading ? 'ACTIVE' : (isPaused ? 'PAUSED' : 'INACTIVE')}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Saved Token Display (Footer-like) */}
+                    {savedToken && (
+                        <div style={{
+                            backgroundColor: '#1a237e',
+                            color: 'white',
+                            borderRadius: '8px',
+                            padding: '12px 20px',
+                            marginTop: '20px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '13px'
+                        }}>
+                            <span>Token: <code>{savedToken.slice(0, 4)}...{savedToken.slice(-4)}</code></span>
+                            <button
+                                onClick={removeToken}
+                                style={{
+                                    background: 'rgba(255,255,255,0.1)',
+                                    border: '1px solid rgba(255,255,255,0.3)',
+                                    color: 'white',
+                                    padding: '4px 10px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Disconnect
+                            </button>
+                        </div>
+                    )}
+
+                    <div style={{
+                        marginTop: '25px',
+                        padding: '16px 20px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #2196F3',
+                        fontSize: '14px',
+                        color: '#333',
+                        lineHeight: '1.6',
+                        marginBottom: '40px'
+                    }}>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#0a1aadff' }}>
+                            Copy Trading Instructions:
+                        </p>
+                        <ol style={{ margin: '0', paddingLeft: '20px' }}>
+                            <li>Ensure you have a valid Deriv API token with 'read' and 'trade' scopes.</li>
+                            <li>Set your preferred stake limits and target assets to filter trades.</li>
+                            <li>The system will automatically mirror trades from the source account.</li>
+                        </ol>
+
+                        <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#fff4e5', borderLeft: '4px solid #ff9800', borderRadius: '4px' }}>
+                            <p style={{ margin: '0 0 5px 0', fontWeight: '700', color: '#d32f2f' }}>⚠️ Error "CopyTradingNotAllowed"?</p>
+                            <p style={{ margin: 0, fontSize: '13px' }}>
+                                This happens if the trader hasn't enabled the "Allow Copiers" setting.
+                                <br /><br />
+                                <strong>Solution (Official):</strong> The trader must go to the <strong>"Share Your Trades"</strong> tab above and click <strong>"Enable Allow Copiers"</strong>.
+                                <br /><br />
+                                <strong>Solution 2 (Bypass):</strong> Enable <strong>Manual Mirror Mode</strong> in the "Follow" tab. Open your Master account in one tab (set to 'Master') and your Follower account in another tab.
                             </p>
                         </div>
                     </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '30px', flexWrap: 'wrap' }}>
-                        <button
-                            style={{
-                                backgroundColor: isCopyTrading ? '#f44336' : '#4CAF50',
-                                color: 'white',
-                                border: 'none',
-                                padding: isMobile ? '16px 24px' : '15px 35px',
-                                borderRadius: '10px',
-                                fontWeight: '700',
-                                fontSize: isMobile ? '16px' : '16px',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                cursor: 'pointer',
-                                boxShadow: isCopyTrading ? '0 4px 14px rgba(244, 67, 54, 0.4)' : '0 4px 14px rgba(76, 175, 80, 0.4)',
-                                width: isMobile ? '100%' : 'auto',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px'
-                            }}
-                            onClick={toggleCopyTrading}
-                        >
-                            {isCopyTrading ? '🛑 Stop' : (isPaused ? '🚀 Resume' : '🚀 Start')}
-                        </button>
-
-                        {isCopyTrading && (
-                            <button
-                                style={{
-                                    backgroundColor: '#FF9800',
-                                    color: 'white',
-                                    border: 'none',
-                                    padding: isMobile ? '16px 24px' : '15px 35px',
-                                    borderRadius: '10px',
-                                    fontWeight: '700',
-                                    fontSize: isMobile ? '16px' : '16px',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 14px rgba(255, 152, 0, 0.4)',
-                                    width: isMobile ? '100%' : 'auto',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px'
-                                }}
-                                onClick={handlePause}
-                            >
-                                <span>⏸️ Pause</span>
-                            </button>
-                        )}
-                    </div>
-
-                    <div style={{
-                        marginTop: '20px',
-                        padding: '12px',
-                        backgroundColor: isCopyTrading ? '#e8f5e9' : (isPaused ? '#fff3e0' : '#f5f5f5'),
-                        borderRadius: '8px',
-                        textAlign: 'center' as const,
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: isCopyTrading ? '#2e7d32' : (isPaused ? '#ef6c00' : '#757575'),
-                        border: `1px solid ${isCopyTrading ? '#c8e6c9' : (isPaused ? '#ffe0b2' : '#e0e0e0')}`
-                    }}>
-                        Status: {isCopyTrading ? 'ACTIVE' : (isPaused ? 'PAUSED' : 'INACTIVE')}
-                    </div>
-                </div>
-            )}
-
-            {/* Saved Token Display (Footer-like) */}
-            {savedToken && (
-                <div style={{
-                    backgroundColor: '#1a237e',
-                    color: 'white',
-                    borderRadius: '8px',
-                    padding: '12px 20px',
-                    marginTop: '20px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '13px'
-                }}>
-                    <span>Token: <code>{savedToken.slice(0, 4)}...{savedToken.slice(-4)}</code></span>
-                    <button
-                        onClick={removeToken}
-                        style={{
-                            background: 'rgba(255,255,255,0.1)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            color: 'white',
-                            padding: '4px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Disconnect
-                    </button>
-                </div>
-            )}
-
-            <div style={{
-                marginTop: '25px',
-                padding: '16px 20px',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                borderLeft: '4px solid #2196F3',
-                fontSize: '14px',
-                color: '#333',
-                lineHeight: '1.6',
-                marginBottom: '40px'
-            }}>
-                <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#0a1aadff' }}>
-                    Copy Trading Instructions:
-                </p>
-                <ol style={{ margin: '0', paddingLeft: '20px' }}>
-                    <li>Ensure you have a valid Deriv API token with 'read' and 'trade' scopes.</li>
-                    <li>Set your preferred stake limits and target assets to filter trades.</li>
-                    <li>The system will automatically mirror trades from the source account.</li>
-                </ol>
-
-                <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#fff4e5', borderLeft: '4px solid #ff9800', borderRadius: '4px' }}>
-                    <p style={{ margin: '0 0 5px 0', fontWeight: '700', color: '#d32f2f' }}>⚠️ Error "CopyTradingNotAllowed"?</p>
-                    <p style={{ margin: 0, fontSize: '13px' }}>
-                        This happens if the trader hasn't enabled the "Strategy Provider" setting on Deriv.
-                        <br /><br />
-                        <strong>Solution 1 (Official):</strong> Go to <a href="https://nakala.deriv.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2196F3', textDecoration: 'underline' }}>Deriv Nakala</a> and enable "Strategy Provider" on your account.
-                        <br /><br />
-                        <strong>Solution 2 (Bypass):</strong> Enable <strong>Manual Mirror Mode</strong> above. Open your Master account in one tab (set to 'Master') and your Follower account in another tab.
-                    </p>
-                </div>
-            </div>
+                </>
+            ) : null}
 
             {/* Toast Notification */}
             {toast && (
