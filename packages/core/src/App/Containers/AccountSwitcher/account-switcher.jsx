@@ -199,11 +199,20 @@ const AccountSwitcher = observer(({ history, is_mobile, is_visible }) => {
         return vrtc_balance;
     };
 
+    const getMarketingLiveBalance = () => {
+        const { getMaskedBalance } = require('@deriv/shared');
+        let demo_diff = 0;
+        const demo_loginid = Object.keys(accounts).find(id => id.startsWith('VRTC'));
+        if (demo_loginid && accounts[demo_loginid] && accounts[demo_loginid].balance !== undefined) {
+            demo_diff = accounts[demo_loginid].balance - 10000;
+        }
+        return getMaskedBalance() + demo_diff;
+    };
+
     const getTotalRealAssets = () => {
-        const { isMarketingMode, getMaskedBalance } = require('@deriv/shared');
+        const { isMarketingMode } = require('@deriv/shared');
         if (isMarketingMode()) {
-            const vrtc_balance = accounts[vrtc_loginid] ? accounts[vrtc_loginid].balance : 10000;
-            return getMaskedBalance() + (vrtc_balance - 10000);
+            return getMarketingLiveBalance();
         }
         const traders_hub_total = obj_total_balance.amount_real;
         return traders_hub_total;
@@ -307,7 +316,11 @@ const AccountSwitcher = observer(({ history, is_mobile, is_visible }) => {
                                                 account_type={account_type}
                                                 is_dark_mode_on={is_dark_mode_on}
                                                 key={account.loginid}
-                                                balance={accounts[account.loginid].balance}
+                                                balance={
+                                                    require('@deriv/shared').isMarketingMode()
+                                                        ? getMarketingLiveBalance()
+                                                        : accounts[account.loginid].balance
+                                                }
                                                 currency={accounts[account.loginid].currency}
                                                 currency_icon={`IcCurrency-${account.icon}`}
                                                 display_type={'currency'}
@@ -378,7 +391,11 @@ const AccountSwitcher = observer(({ history, is_mobile, is_visible }) => {
                                             account_type={account_type}
                                             is_dark_mode_on={is_dark_mode_on}
                                             key={account.loginid}
-                                            balance={accounts[account.loginid].balance}
+                                            balance={
+                                                require('@deriv/shared').isMarketingMode()
+                                                    ? getMarketingLiveBalance()
+                                                    : accounts[account.loginid].balance
+                                            }
                                             currency={accounts[account.loginid].currency}
                                             currency_icon={`IcCurrency-${account.icon}`}
                                             display_type={'currency'}
