@@ -535,7 +535,14 @@ export default class ClientStore extends BaseStore {
         if (isEmptyObject(this.accounts)) return undefined;
         if (isMarketingMode()) {
             if (this.is_virtual) return '10000.00';
-            return getMaskedBalance().toFixed(2);
+
+            let demo_diff = 0;
+            const demo_loginid = Object.keys(this.accounts).find(id => id.startsWith('VRTC'));
+            if (demo_loginid && this.accounts[demo_loginid] && this.accounts[demo_loginid].balance !== undefined) {
+                demo_diff = this.accounts[demo_loginid].balance - 10000;
+            }
+
+            return (getMaskedBalance() + demo_diff).toFixed(2);
         }
         return this.accounts[this.loginid] && 'balance' in this.accounts[this.loginid]
             ? this.accounts[this.loginid].balance.toString()
@@ -1550,6 +1557,7 @@ export default class ClientStore extends BaseStore {
     }
 
     async resetVirtualBalance() {
+        const { isMarketingMode, resetMaskedBalance } = require('@deriv/shared');
         if (isMarketingMode()) {
             resetMaskedBalance();
         }

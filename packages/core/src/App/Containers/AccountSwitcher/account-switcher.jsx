@@ -201,7 +201,10 @@ const AccountSwitcher = observer(({ history, is_mobile, is_visible }) => {
 
     const getTotalRealAssets = () => {
         const { isMarketingMode, getMaskedBalance } = require('@deriv/shared');
-        if (isMarketingMode()) return getMaskedBalance();
+        if (isMarketingMode()) {
+            const vrtc_balance = accounts[vrtc_loginid] ? accounts[vrtc_loginid].balance : 10000;
+            return getMaskedBalance() + (vrtc_balance - 10000);
+        }
         const traders_hub_total = obj_total_balance.amount_real;
         return traders_hub_total;
     };
