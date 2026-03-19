@@ -4,11 +4,7 @@ import DBotStore from '../scratch/dbot-store';
 import { save_types } from '../constants/save-type';
 
 // Import bots from master folder
-import DerivWizard from './master/Derivwizard.xml';
-import MasterG8ByStateFX from './master/MasterG8ByStateFx.xml';
-import MetroV4EvenOddBot from './master/Metrov4EvenandOddDigitBotUpdated.xml';
-import StateHNR from './master/STATEHNR.xml';
-import StateXV1 from './master/STATEXV1.xml';
+import QuantumXElite from './master/QuantumX Elite Version 2 by Brian Fx.xml';
 import BRAMSPEEDBOT from './buru/BRAMSPEEDBOT.xml';
 import EvenOddAutoSwitcher from './buru/EvenOddAutoSwitcher.xml';
 import VxAutoSwitcher from './buru/Vx.xml';
@@ -34,24 +30,10 @@ const getBlockly = () => {
 
 // Static bot configurations - Master bots
 const STATIC_BOTS = {
-    deriv_wizard: {
-        id: 'deriv_wizard',
-        name: 'Deriv Wizard',
-        xml: DerivWizard,
-        timestamp: Date.now(),
-        save_type: save_types.LOCAL,
-    },
-    state_hnr: {
-        id: 'state_hnr',
-        name: 'Begginer Bot',
-        xml: StateHNR,
-        timestamp: Date.now(),
-        save_type: save_types.LOCAL,
-    },
-    over_under_switcher_bot: {
-        id: 'over_under_switcher_bot',
-        name: 'Over Under Switcher Bot',
-        xml: OverUnderSwitcherBot,
+    quantum_x_elite: {
+        id: 'quantum_x_elite',
+        name: 'QuantumX Elite Version 2',
+        xml: QuantumXElite,
         timestamp: Date.now(),
         save_type: save_types.LOCAL,
     },
