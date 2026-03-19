@@ -320,7 +320,7 @@ export default class AppStore {
         const { client } = this.core;
 
         this.disposeResidenceChangeReaction = reaction(
-            () => client.account_settings.country_code,
+            () => client.account_settings?.country_code,
             () => this.handleErrorForEu()
         );
     };

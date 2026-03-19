@@ -1,7 +1,7 @@
 {
-    "name": "NILOTEGRAM",
-    "short_name": "NILOTEGRAM",
-    "description": "NILOTEGRAM gives everyone an easy way to participate in the financial markets.",
+    "name": "Trading Tool",
+    "short_name": "Trading Tool",
+    "description": "Trading Tool gives everyone an easy way to participate in the financial markets.",
     "id": "/",
     "start_url": "{start_url_base}",
     "display": "standalone",
