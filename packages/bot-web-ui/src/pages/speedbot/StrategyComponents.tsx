@@ -237,7 +237,7 @@ export const ConfigurationPanel = observer(({
             <div className='qs-config-header' onClick={onToggle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <MdSettings style={{ fontSize: 20, color: 'var(--primary-color)' }} />
-                    <span className='qs-cfg-title'>CONFIGURATION</span>
+                    <span className='qs-cfg-title'>Strategy</span>
                 </div>
                 {isOpen ? <FaChevronUp /> : <FaChevronDown />}
             </div>
@@ -340,17 +340,16 @@ export const TransactionTable = observer(({ trades }: { trades: any[] }) => {
         <div className='qs-transaction-table'>
             <div className='qs-table-header'>
                 <MdHistory className='qs-icon' />
-                <span>RECENT TRANSACTIONS</span>
+                <span>SpeedBot Engine</span>
             </div>
             <div className='qs-table-container'>
                 <table>
                     <thead>
                         <tr>
-                            <th>REF.</th>
-                            <th>TYPE</th>
+                            <th>TIME</th>
+                            <th>DETAILS</th>
                             <th>STAKE</th>
                             <th>RESULT</th>
-                            <th>PROFIT/LOSS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -364,13 +363,10 @@ export const TransactionTable = observer(({ trades }: { trades: any[] }) => {
                                     trade.status === 'lost' ? 'result-lost' : 'result-pending';
                                 return (
                                     <tr key={index}>
-                                        <td>{trade.ref || `#${index}`}</td>
+                                        <td>{new Date().toLocaleTimeString()}</td>
                                         <td>{trade.contract_type}</td>
                                         <td>{formatMoney('USD', trade.buy_price, true)}</td>
                                         <td className={statusClass}>{trade.status?.toUpperCase()}</td>
-                                        <td className={trade.profit >= 0 ? 'profit' : 'loss'}>
-                                            {trade.profit !== undefined ? formatMoney('USD', trade.profit, true) : '-'}
-                                        </td>
                                     </tr>
                                 );
                             })
