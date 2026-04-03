@@ -1,3 +1,13 @@
 {
-    "routes": [{ "handle": "filesystem" }, { "src": "/(.*)", "dest": "/index.html" }]
+    "version": 2,
+    "name": "brian-binary",
+    "installCommand": "npm install --strict-peer-deps --ignore-engines",
+    "buildCommand": "NODE_OPTIONS=--max_old_space_size=4096 npm run build:prod",
+    "outputDirectory": "packages/core/dist",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
 }
